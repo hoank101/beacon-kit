@@ -1198,3 +1198,93 @@ func TestBytes_MarshalText(t *testing.T) {
 		})
 	}
 }
+
+func TestBytesUnmarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    bytes.Bytes
+		wantErr bool
+	}{
+		{
+			name:    "valid input",
+			input:   `"0x01020304"`,
+			want:    bytes.Bytes{0x01, 0x02, 0x03, 0x04},
+			wantErr: false,
+		},
+		{
+			name:    "invalid input - not hex",
+			input:   `"01020304"`,
+			wantErr: true,
+		},
+		{
+			name:    "invalid input - non-quoted hex string",
+			input:   `"0x010203`,
+			wantErr: true,
+		},
+		{
+			name:    "empty input",
+			input:   `""`,
+			want:    bytes.Bytes{},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got bytes.Bytes
+			err := got.UnmarshalJSON([]byte(tt.input))
+			if tt.wantErr {
+				require.Error(t, err, "Test case: %s", tt.name)
+			} else {
+				require.NoError(t, err, "Test case: %s", tt.name)
+				require.Equal(t, tt.want, got, "Test case: %s", tt.name)
+			}
+		})
+	}
+}
+
+func TestBytesUnmarshalText(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    bytes.Bytes
+		wantErr bool
+	}{
+		{
+			name:    "valid input",
+			input:   "0x01020304",
+			want:    bytes.Bytes{0x01, 0x02, 0x03, 0x04},
+			wantErr: false,
+		},
+		{
+			name:    "invalid input - not hex",
+			input:   "01020304",
+			wantErr: true,
+		},
+		{
+			name:    "invalid input - wrong length",
+			input:   "0x0102030",
+			wantErr: true,
+		},
+		{
+			name:    "empty input",
+			input:   "",
+			want:    bytes.Bytes{},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got bytes.Bytes
+			err := got.UnmarshalText([]byte(tt.input))
+			if tt.wantErr {
+				require.Error(t, err, "Test case: %s", tt.name)
+			} else {
+				require.NoError(t, err, "Test case: %s", tt.name)
+				require.Equal(t, tt.want, got, "Test case: %s", tt.name)
+			}
+		})
+	}
+}
